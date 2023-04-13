@@ -22,6 +22,9 @@ dependencies {
 
     // This dependency is used by the application.
     implementation("com.google.guava:guava:31.1-jre")
+
+    // JSON Parser
+    implementation("org.json:json:20210307")
 }
 
 application {
