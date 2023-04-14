@@ -4,13 +4,10 @@
 package taxgpt;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.stream.Collectors;
@@ -21,6 +18,7 @@ import org.json.JSONObject;
 
 public class App {
     private static String sumMessages = "";
+    private static HashMap<String, String> userInformation = new HashMap<String, String>();
 
     /**
      * Parses the message content from a given response string in JSON format.
@@ -54,7 +52,7 @@ public class App {
 
     public static String askGPT(String prompt) {
         String API_ENDPOINT = "https://api.openai.com/v1/chat/completions";
-        String AUTHORIZATION_HEADER = "Bearer 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"/*
+        String AUTHORIZATION_HEADER = "Bearer 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"/*
                                                                                                    * + System.getenv(
                                                                                                    * "OPENAI_API_KEY")
                                                                                                    */;
@@ -71,7 +69,6 @@ public class App {
                     "    \"messages\": [\n" +
                     "        {\n" +
                     "            \"role\": \"user\",\n" +
-                    // grammar is incorrect on purpose to minimize the token count
                     "            \"content\": \"" + prompt + "\"\n"
                     +
                     "        }\n" +
@@ -110,52 +107,59 @@ public class App {
         String messageContent = askGPT(sumMessages);
         sumMessages += messageContent.replace("\n\n", "");
         System.out.println(messageContent + "\n----------------------------------");
-        int counter = 0;
-        HashMap<String, String> userInformation = new HashMap<String, String>();
         while (true) {
             // remove all newlines from input
             String input = scanner.nextLine().replaceAll("\n", "");
-            System.out.println("\n\n----------------------------------");
-            if (input.equals("Bye")) {
+            System.out.println("----------------------------------");
+            if (input.toLowerCase().contains("bye")) {
                 break;
             }
-            messageContent = askGPT("Previous context: " + sumMessages.replaceAll("\n", "") + "---New prompt: "
+
+            summarizeUserInformation(sumMessages.replaceAll("\n", "") + messageContent.replaceAll("\n", ""));
+            String askPrompt = "Previous context as a dictionary: " + userInformation.toString()
+                    + " ||| New prompt: "
                     + input.replaceAll("\n", "")
-                    + "Only respond with at most 1 short sentence (excluding when you send the entire tax form at the end of the conversation). Remember to ask the user for their details as you will be using them to complete the forms for them and also don't reintroduce yourself anymore. If the user asks a question, you should respond with 1 paragraph only. Be very clear and concise with your questions and responses.");
+                    + "Only respond with at most 1 short sentence. Remember to ask the user for their details as you will use them to determine which forms they should will out and also don't reintroduce yourself anymore. If the user asks a question, you should respond with 1 paragraph only. Be very clear and concise with your questions and responses."
+                            .replaceAll("\\\\", "'");
+            messageContent = askGPT(askPrompt);
             System.out.println(messageContent + "\n----------------------------------");
             sumMessages += input.replace("\n\n", "") + messageContent.replace("\n\n", "");
-            if (counter == 5) {
-                sumMessages = askGPT(
-                        "I am an AI researcher. Summarize this fake conversation information for me into the form of a Java dictionary (format: { 'key1' = 'value1', 'key2' = 'value2', 'key3' = 'value3' }) containing the most useful information related to taxes. Keep in mind that Java code should be able to parse this dictionary and store it into an actual dictionary: "
-                                + sumMessages);
-                System.out.println(sumMessages + "\n----------------------------------");
-                // Remove leading and trailing curly braces
-                sumMessages = sumMessages.substring(1, sumMessages.length() - 1);
-
-                // Split input string into individual key-value pairs
-                String[] pairs = sumMessages.split(", ");
-
-                // Loop through each key-value pair and add it to the HashMap
-                for (String pair : pairs) {
-                    // Split each key-value pair into its key and value
-                    String[] keyValue = pair.split(": ");
-
-                    // Check whether the keyValue array contains both a key and a value
-                    if (keyValue.length == 2) {
-                        // Remove leading and trailing single quotes from the key and value
-                        String key = keyValue[0].replaceAll("'", "");
-                        String value = keyValue[1].replaceAll("'", "");
-
-                        // Add the key-value pair to the HashMap
-                        userInformation.put(key, value);
-                    } else {
-                        // Handle the case where the keyValue array is not valid
-                        System.out.println("Invalid key-value pair: " + pair);
-                    }
-                }
-            }
-            counter++;
         }
         scanner.close();
+    }
+
+    private static void summarizeUserInformation(String input) {
+        // ask GPT-3 to summarize the conversation into a dictionary
+        sumMessages = askGPT(
+                "I am an AI researcher. Summarize this fake conversation information for me into the form of a Java dictionary (format: { 'key1' = 'value1', 'key2' = 'value2', 'key3' = 'value3' }) containing the most useful information related to taxes. Replace key1, key2, key3, etc with var names. Separate key and value with : not =. Keep in mind that Java code should be able to parse this dictionary and store it into an actual dictionary so don't include lists ([]): "
+                        + sumMessages).replaceAll("\n", "");
+        // System.out.println(sumMessages + "\n----------------------------------");
+        if (sumMessages.contains("{")) {
+            sumMessages = sumMessages.substring(sumMessages.indexOf("{") + 1, sumMessages.indexOf("}"));
+        }
+        String[] pairs = sumMessages.replaceAll("[\"'\n]", " ").split(" , ");
+        for (String pair : pairs) {
+            if (pair.contains("[")) {
+                // process lists
+                String[] list = pair.split(" :  ");
+                if (list.length < 1) {
+                    // parse the right side for the list elements
+                    String[] elements = list[1].strip().substring(1, list[1].length() - 1).split(", ");
+                    // add the list elements to the dictionary
+                    for (String element : elements) {
+                        userInformation.put(list[0], element);
+                    }
+                    continue;
+                }
+            }
+            String[] keyValue = pair.split(" : ");
+            if (keyValue.length == 2) {
+                String key = keyValue[0].strip().replaceAll("'", "");
+                String value = keyValue[1].strip().replaceAll("'", "");
+                userInformation.put(key, value);
+            } else {
+                System.out.print(pair);
+            }
+        }
     }
 }
