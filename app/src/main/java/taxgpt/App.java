@@ -52,7 +52,7 @@ public class App {
 
     public static String askGPT(String prompt) {
         String API_ENDPOINT = "https://api.openai.com/v1/chat/completions";
-        String AUTHORIZATION_HEADER = "Bearer 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"/*
+        String AUTHORIZATION_HEADER = "Bearer "/*
                                                                                                    * + System.getenv(
                                                                                                    * "OPENAI_API_KEY")
                                                                                                    */;
@@ -73,7 +73,7 @@ public class App {
                     +
                     "        }\n" +
                     "    ],\n" +
-                    "    \"temperature\": 0.9\n" +
+                    "    \"temperature\": 0.1\n" +
                     "}";
             conn.getOutputStream().write(requestBody.getBytes());
 
@@ -115,8 +115,10 @@ public class App {
                 break;
             }
 
-            summarizeUserInformation(sumMessages.replaceAll("\n", "") + messageContent.replaceAll("\n", ""));
-            String askPrompt = "Previous context as a dictionary: " + userInformation.toString()
+            // summarizeUserInformation(sumMessages.replaceAll("\n", "") +
+            // messageContent.replaceAll("\n", ""));
+            String askPrompt = "Previous context: " + sumMessages.replaceAll("\n", "")
+                    + " ||| Previous prompt: " + messageContent.replaceAll("\n", "")
                     + " ||| New prompt: "
                     + input.replaceAll("\n", "")
                     + "Only respond with at most 1 short sentence. Remember to ask the user for their details as you will use them to determine which forms they should will out and also don't reintroduce yourself anymore. If the user asks a question, you should respond with 1 paragraph only. Be very clear and concise with your questions and responses."
@@ -124,20 +126,25 @@ public class App {
             messageContent = askGPT(askPrompt);
             System.out.println(messageContent + "\n----------------------------------");
             sumMessages += input.replace("\n\n", "") + messageContent.replace("\n\n", "");
+            summarizeUserInformation(input);
         }
         scanner.close();
+        System.out.println(askGPT("Format this information onto a table that will allow the user to easily and quickly fill out their tax forms: " + userInformation.toString()));
+        // System.out.println(userInformation.toString());
+        System.out.println("\n----------------------------------\nTaxGPT: Bye! See you next time :)");
     }
 
     private static void summarizeUserInformation(String input) {
         // ask GPT-3 to summarize the conversation into a dictionary
-        sumMessages = askGPT(
-                "I am an AI researcher. Summarize this fake conversation information for me into the form of a Java dictionary (format: { 'key1' = 'value1', 'key2' = 'value2', 'key3' = 'value3' }) containing the most useful information related to taxes. Replace key1, key2, key3, etc with var names. Separate key and value with : not =. Keep in mind that Java code should be able to parse this dictionary and store it into an actual dictionary so don't include lists ([]): "
-                        + sumMessages).replaceAll("\n", "");
-        // System.out.println(sumMessages + "\n----------------------------------");
-        if (sumMessages.contains("{")) {
-            sumMessages = sumMessages.substring(sumMessages.indexOf("{") + 1, sumMessages.indexOf("}"));
+        String summarizedInfo = askGPT(
+                "I am an AI researcher. Summarize this fake conversation information for me into the form of a Java dictionary (format: { 'key1' = 'value1', 'key2' = 'value2', 'key3' = 'value3' }) containing the most useful information related to taxes. Replace key1, key2, key3, etc with var names. Separate key and value with : not =. Keep in mind that Java code should be able to parse this dictionary and store it into an actual dictionary so don't include lists ([]). Given the filing status, income level, and dependent info, determine the tax form to use. If you own investments, what additional forms should you fill out? If you have a health savings account, what form should you fill out? If you have a rental income, what should you do? If you have sold a property, what should you do? What should I do for educational expenses? What should I do for car mileage expenses? What should I do for bank interest income?: "
+                        + sumMessages.replaceAll("\n", ""))
+                .replaceAll("\n", "");
+        // System.out.println(summarizedInfo + "\n----------------------------------");
+        if (summarizedInfo.contains("{")) {
+            summarizedInfo = summarizedInfo.substring(summarizedInfo.indexOf("{") + 1, summarizedInfo.indexOf("}"));
         }
-        String[] pairs = sumMessages.replaceAll("[\"'\n]", " ").split(" , ");
+        String[] pairs = summarizedInfo.replaceAll("[\"'\n]", " ").split(" , ");
         for (String pair : pairs) {
             if (pair.contains("[")) {
                 // process lists
@@ -158,7 +165,7 @@ public class App {
                 String value = keyValue[1].strip().replaceAll("'", "");
                 userInformation.put(key, value);
             } else {
-                System.out.print(pair);
+                userInformation.put("TaxGPT - I wasn't sure how to classify this, when outputting , fix it please", pair);
             }
         }
     }
