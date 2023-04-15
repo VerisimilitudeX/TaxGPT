@@ -36,7 +36,6 @@ import org.json.JSONObject;
 
 public class TaxGPT {
     private static String sumMessages = "";
-    // This HashMap is later used to store the user's information
     private static HashMap<String, String> userInformation = new HashMap<String, String>();
 
     /**
@@ -81,25 +80,9 @@ public class TaxGPT {
         System.out.println(askGPT(
                 "Format this information onto a table (title and headers should be very descriptive of the data) that will allow the user to easily and quickly fill out their tax forms: "
                         + userInformation.toString()));
+        // System.out.println(userInformation.toString());
         System.out.println(
                 "\n----------------------------------\nTaxGPT: Bye! See you next year :)\n----------------------------------");
-    }
-
-    /**
-     * Prints a table of the user's information.
-     * 
-     * @param userInformation a HashMap containing the user's information
-     */
-    public static void printTable(HashMap<String, String> info) {
-        System.out.println("\n----------------------------------");
-        System.out.println("\nTaxGPT: Here is your information in a table format:");
-        System.out.println("\n----------------------------------");
-        for (String key : info.keySet()) {
-            // makes a markdown table row for each key-value pair
-            if (!key.contains("null")) {
-                System.out.println("| " + key + " | " + info.get(key) + " |");
-            }
-        }
     }
 
     /**
@@ -133,18 +116,9 @@ public class TaxGPT {
      *         model
      */
     public static String askGPT(String prompt) {
-        // Keep prompting the user until the user provides a prompt that is under 100
-        // characters
-        while (prompt.length() > 4096) {
-            System.out.println("Please enter a prompt that is under 100 characters.");
-            Scanner scanner = new Scanner(System.in);
-            prompt = scanner.nextLine();
-            scanner.close();
-        }
-
         String API_ENDPOINT = "https://api.openai.com/v1/chat/completions";
         // API key omitted for privacy
-        String AUTHORIZATION_HEADER = "Bearer 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";
+        String AUTHORIZATION_HEADER = "Bearer sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
         try {
             // Create connection to the OpenAI API endpoint
             URL url = new URL(API_ENDPOINT);
@@ -239,7 +213,8 @@ public class TaxGPT {
                 String value = keyValue[1].strip().replaceAll("'", "");
                 userInformation.put(key, value);
             } else {
-                userInformation.put("null", pair);
+                userInformation.put("TaxGPT - I wasn't sure how to classify this, when outputting , fix it please",
+                        pair);
             }
         }
     }
