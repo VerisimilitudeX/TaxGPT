@@ -14,20 +14,24 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * TaxGPT: A ChatGPT-powered assistant that helps users easily navigate the tax filing
+ * TaxGPT: A ChatGPT-powered assistant that helps users easily navigate the tax
+ * filing
  * process. This program is a bot that uses the OpenAI API to
- * communicate with OpenAI's GPT-3.5 model. The chatbot is able to answer questions,
+ * communicate with OpenAI's GPT-3.5 model. The chatbot is able to answer
+ * questions,
  * provide guidance on filling out the tax form, and offer suggestions for
  * deductions or credits the user may be eligible for. The chatbot uses natural
- * language processing to understand user queries and respond in a conversational 
- * way. The chatbot also uses the user's information to determine which 
- * forms they should dill out and also formats the information in a table that 
+ * language processing to understand user queries and respond in a
+ * conversational
+ * way. The chatbot also uses the user's information to determine which
+ * forms they should dill out and also formats the information in a table that
  * will allow the user to easily and quickly fill out their tax forms.
  * 
  * @version 1.0
  * @author Omitted for privacy
  * @since 2023-04-12
- * @citation OpenAI API, https://beta.openai.com/docs/api-reference/create-completion
+ * @citation OpenAI API,
+ *           https://beta.openai.com/docs/api-reference/create-completion
  */
 
 public class TaxGPT {
@@ -40,7 +44,7 @@ public class TaxGPT {
      * 
      * @param args the command line arguments
      * @throws InterruptedException if the thread is interrupted
-     * @throws IOException if an I/O error occurs
+     * @throws IOException          if an I/O error occurs
      */
     public static void main(String[] args) throws InterruptedException, IOException {
         Scanner scanner = new Scanner(System.in);
@@ -65,7 +69,7 @@ public class TaxGPT {
                     + "Only respond with at most 1 short sentence. Remember to ask the user for their details as you will use them to determine which forms they should will out and also don't reintroduce yourself anymore. If the user asks a question, you should respond with 1 paragraph only. Be very clear and concise with your questions and responses."
                             .replaceAll("\\\\", "'");
             messageContent = askGPT(askPrompt);
-            
+
             // **AP CS Principles Grader: TEXTUAL OUTPUT IN RESPONSE TO USER INPUT**
             System.out.println(messageContent + "\n----------------------------------");
             sumMessages += input.replace("\n\n", "") + messageContent.replace("\n\n", "");
@@ -77,7 +81,8 @@ public class TaxGPT {
                 "Format this information onto a table (title and headers should be very descriptive of the data) that will allow the user to easily and quickly fill out their tax forms: "
                         + userInformation.toString()));
         // System.out.println(userInformation.toString());
-        System.out.println("\n----------------------------------\nTaxGPT: Bye! See you next year :)\n----------------------------------");
+        System.out.println(
+                "\n----------------------------------\nTaxGPT: Bye! See you next year :)\n----------------------------------");
     }
 
     /**
@@ -133,7 +138,7 @@ public class TaxGPT {
                     "    ],\n" +
                     "    \"temperature\": 0.1\n" +
                     "}";
-            
+
             // **AP CS Principles Grader: ONLINE DATA STREAM (API)**
             // Write the request body to the connection output stream
             conn.getOutputStream().write(requestBody.getBytes());
@@ -165,13 +170,15 @@ public class TaxGPT {
     }
 
     /**
-     * // **AP CS Principles Grader: PROCEDURE WITH RETURN TYPE (VOID) AND PARAMETER (INPUT)**
+     * // **AP CS Principles Grader: PROCEDURE WITH RETURN TYPE (VOID) AND PARAMETER
+     * (INPUT)**
      * Summarizes the user information into a dictionary.
      * 
      * @param input the user input
      */
     private static void summarizeUserInformation(String input) {
-        // ask GPT-3 to summarize the conversation into a dictionary (this will make it easier to format the information onto a table later)
+        // ask GPT-3 to summarize the conversation into a dictionary (this will make it
+        // easier to format the information onto a table later)
         String summarizedInfo = askGPT(
                 "I am an AI researcher. Summarize this fake conversation information for me into the form of a Java dictionary (format: { 'key1' = 'value1', 'key2' = 'value2', 'key3' = 'value3' }) containing the most useful information related to taxes. Replace key1, key2, key3, etc with var names. Separate key and value with : not =. Keep in mind that Java code should be able to parse this dictionary and store it into an actual dictionary so don't include lists ([]). Given the filing status, income level, and dependent info, determine the tax form to use. If you own investments, what additional forms should you fill out? If you have a health savings account, what form should you fill out? If you have a rental income, what should you do? If you have sold a property, what should you do? What should I do for educational expenses? What should I do for car mileage expenses? What should I do for bank interest income?: "
                         + sumMessages.replaceAll("\n", ""))
