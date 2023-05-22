@@ -49,12 +49,11 @@ public class TaxGPT {
      */
     public static void main(String[] args) throws InterruptedException, IOException {
         Scanner scanner = new Scanner(System.in);
-        sumMessages = "Hello TaxGPT, create a chatbot interface to help users navigate the tax filing process. The chatbot should be able to answer questions, provide guidance on filling out the tax form, and offer suggestions for deductions or credits the user may be eligible for. The chatbot should use natural language processing to understand user queries and respond in a conversational way. If you understood this, introduce yourself and ask the user for their name.";
+        sumMessages = "Hi TaxGPT, you are an assistant who helps users navigate the tax filing process. The chatbot should be able to answer questions, provide guidance on filling out the tax form, and offer suggestions for deductions or credits the user may be eligible for. The chatbot should use natural language processing to understand user queries and respond in a conversational way. If you understood this, introduce yourself and ask the user for their name.";
         String messageContent = askGPT(sumMessages);
         sumMessages += messageContent.replace("\n\n", "");
         System.out.println(messageContent + "\n----------------------------------");
         while (true) {
-            // // **AP CS Principles Grader: USER INPUT**
             String input = scanner.nextLine().replaceAll("\n", "");
             System.out.println("----------------------------------");
             if (input.toLowerCase().contains("bye")) {
@@ -71,13 +70,11 @@ public class TaxGPT {
                             .replaceAll("\\\\", "'");
             messageContent = askGPT(askPrompt);
 
-            // **AP CS Principles Grader: TEXTUAL OUTPUT IN RESPONSE TO USER INPUT**
             System.out.println(messageContent + "\n----------------------------------");
             sumMessages += input.replace("\n\n", "") + messageContent.replace("\n\n", "");
             summarizeUserInformation(input);
         }
         scanner.close();
-        // **AP CS Principles Grader: CALL TO PROCEDURE**
         System.out.println(askGPT(
                 "Format this information onto a table (title and headers should be very descriptive of the data) that will allow the user to easily and quickly fill out their tax forms: "
                         + userInformation.toString()));
@@ -165,7 +162,6 @@ public class TaxGPT {
                     "    \"temperature\": 0.1\n" +
                     "}";
 
-            // **AP CS Principles Grader: ONLINE DATA STREAM (API)**
             // Write the request body to the connection output stream
             conn.getOutputStream().write(requestBody.getBytes());
 
@@ -196,8 +192,6 @@ public class TaxGPT {
     }
 
     /**
-     * // **AP CS Principles Grader: PROCEDURE WITH RETURN TYPE (VOID) AND PARAMETER
-     * (INPUT)**
      * Summarizes the user information into a dictionary.
      * 
      * @param input the user input
@@ -209,14 +203,11 @@ public class TaxGPT {
                 "I am an AI researcher. Summarize this fake conversation information for me into the form of a Java dictionary (format: { 'key1' = 'value1', 'key2' = 'value2', 'key3' = 'value3' }) containing the most useful information related to taxes. Replace key1, key2, key3, etc with var names. Separate key and value with : not =. Keep in mind that Java code should be able to parse this dictionary and store it into an actual dictionary so don't include lists ([]). Given the filing status, income level, and dependent info, determine the tax form to use. If you own investments, what additional forms should you fill out? If you have a health savings account, what form should you fill out? If you have a rental income, what should you do? If you have sold a property, what should you do? What should I do for educational expenses? What should I do for car mileage expenses? What should I do for bank interest income?: "
                         + sumMessages.replaceAll("\n", ""))
                 .replaceAll("\n", "");
-        // **AP CS Principles Grader: SELECTION**
         if (summarizedInfo.contains("{")) {
             summarizedInfo = summarizedInfo.substring(summarizedInfo.indexOf("{") + 1, summarizedInfo.indexOf("}"));
         }
-        // **AP CS Principles Grader: LIST (JAVA ARRAY)**
         String[] pairs = summarizedInfo.replaceAll("[\"'\n]", " ").split(" , ");
 
-        // **AP CS Principles Grader: ITERATION + SEQUENCING**
         for (String pair : pairs) {
             if (pair.contains("[")) {
                 // process lists
@@ -231,7 +222,6 @@ public class TaxGPT {
                     continue;
                 }
             }
-            // **AP CS Principles Grader: LIST (JAVA ARRAY AND HASHMAP)**
             // clean data and store
             String[] keyValue = pair.split(" : ");
             if (keyValue.length == 2) {
