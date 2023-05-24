@@ -25,6 +25,9 @@ dependencies {
 
     // JSON Parser
     implementation("org.json:json:20210307")
+
+    // OpenAI
+    implementation("com.openai:openai-api-client:1.0.0")
 }
 
 application {
