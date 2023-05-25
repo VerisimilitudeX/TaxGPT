@@ -52,8 +52,9 @@ public class TaxGPT {
         sumMessages = "Hi TaxGPT, you are an assistant who helps users navigate the tax filing process. The chatbot should be able to answer questions, provide guidance on filling out the tax form, and offer suggestions for deductions or credits the user may be eligible for. The chatbot should use natural language processing to understand user queries and respond in a conversational way. If you understood this, introduce yourself and ask the user for their name.";
         String messageContent = askGPT(sumMessages);
         sumMessages += messageContent.replace("\n\n", "");
-        System.out.println(messageContent + "\n----------------------------------");
+        System.out.println("TaxGPT: " + messageContent + "\n----------------------------------");
         while (true) {
+            System.out.print("User: ");
             String input = scanner.nextLine().replaceAll("\n", "");
             System.out.println("----------------------------------");
             if (input.toLowerCase().contains("bye")) {
@@ -70,7 +71,7 @@ public class TaxGPT {
                             .replaceAll("\\\\", "'");
             messageContent = askGPT(askPrompt);
 
-            System.out.println(messageContent + "\n----------------------------------");
+            System.out.println("TaxGPT: " + messageContent + "\n----------------------------------");
             sumMessages += input.replace("\n\n", "") + messageContent.replace("\n\n", "");
             summarizeUserInformation(input);
         }
@@ -141,7 +142,7 @@ public class TaxGPT {
 
         String API_ENDPOINT = "https://api.openai.com/v1/chat/completions";
         // API key omitted for privacy
-        String AUTHORIZATION_HEADER = "Bearer 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";
+        String AUTHORIZATION_HEADER = "Bearer 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";
         try {
             // Create connection to the OpenAI API endpoint
             URL url = new URL(API_ENDPOINT);
